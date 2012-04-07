@@ -1,0 +1,23 @@
+[Desktop Entry]
+Exec=rssslideshow.kss
+Icon=preferences-desktop-screensaver
+Type=Service
+X-KDE-ServiceTypes=ScreenSaver
+Actions=Setup;InWindow;Root;
+X-KDE-Category=Banners & Pictures
+Name=RSS Slide Show
+
+[Desktop Action Setup]
+Exec=rssslideshow.kss -setup
+Name=Setup...
+Icon=preferences-desktop-screensaver
+
+[Desktop Action InWindow]
+Exec=rssslideshow.kss -window-id %w
+Name=Display in Specified Window
+NoDisplay=true
+
+[Desktop Action Root]
+Exec=rssslideshow.kss -root
+Name=Display in Root Window
+NoDisplay=true
