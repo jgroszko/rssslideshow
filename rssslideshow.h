@@ -47,6 +47,8 @@ public:
   void restart();
 
 protected:
+  KUrl feedPath(QString feedTitle, QString fileName);
+
   /** Load list of images from directory */
   virtual void loadFeeds();
   virtual void loadFeed(KUrl feed);

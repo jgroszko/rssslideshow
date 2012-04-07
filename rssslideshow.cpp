@@ -8,7 +8,7 @@
  * This code is under GPL
  *
  * 2001/03/04 Converted to libkscreensaver by Martin R. Jones.
- * 2011 Adapted to RSS by John Groszko
+ * 2011/12 Adapted to RSS by John Groszko
  */
 
 
@@ -920,6 +920,15 @@ void rssSlideShowSaver::loadFeeds()
   mRandomList = mFileList;
 }
 
+KUrl rssSlideShowSaver::feedPath(QString feedTitle, QString fileName = QString())
+{
+	return KUrl::fromPathOrUrl(
+		KStandardDirs::locateLocal(
+			"cache",
+			"rssslideshow/" + feedTitle + "/" + fileName,
+			KGlobal::activeComponent()));
+}
+
 void rssSlideShowSaver::loadFeed(KUrl feed)
 {
 	QString tmpFile;
@@ -937,6 +946,18 @@ void rssSlideShowSaver::loadFeed(KUrl feed)
 			title = title.trimmed();
 		}
 
+		QDir feedDir = QDir(feedPath(title).path());
+		feedDir.setFilter(QDir::Files);
+		QFileInfoList fileinfolist = feedDir.entryInfoList();
+		QFileInfoList::Iterator it = fileinfolist.begin();
+		while ( it != fileinfolist.end() )
+		{
+			mFileList.append(it->filePath());
+			qDebug() << "Found file " << it->filePath();
+
+			++it;
+		}
+
 		QXmlQuery q2;
 		q2.bindVariable("path", QVariant(feed.pathOrUrl()));
 		q = QString("declare variable $path external;") +
@@ -944,22 +965,19 @@ void rssSlideShowSaver::loadFeed(KUrl feed)
 		q2.setQuery(q);
 
 		QStringList items;
-		QRegExp imgSrc("src=\"([^\\s\"]*\\.(png|jpg|jpeg|gif))\"");
+		QRegExp imgSrc("src=\"([^\\s\"]+\\.(png|jpg|jpeg|gif))\"");
 		if(q2.evaluateTo(&items))
 		{
 			for(int i = 0; i < items.count(); i++)
 			{
 				imgSrc.indexIn(items.at(i));
-				qDebug() << imgSrc.captureCount();
-				if(imgSrc.captureCount() > 0)
+				if(imgSrc.captureCount() > 0 &&
+				   !imgSrc.cap(1).isEmpty())
 				{
-					qDebug() << imgSrc.cap(1);
 					loadImage(title, KUrl::fromPathOrUrl(imgSrc.cap(1)));
 				}
 			}
 		}
-
-		
 
 		KIO::NetAccess::removeTempFile(tmpFile);
 	}
@@ -967,21 +985,14 @@ void rssSlideShowSaver::loadFeed(KUrl feed)
 
 void rssSlideShowSaver::loadImage(QString feedTitle, KUrl image)
 {
-	KUrl localPath = KUrl::fromPathOrUrl(
-		KStandardDirs::locateLocal(
-			"cache",
-			"rssslideshow/" + feedTitle + "/" + image.fileName(),
-			KGlobal::activeComponent()));
+	QString tmpFile;
+	KUrl localPath = feedPath(feedTitle, image.fileName());
 
-	if(!KStandardDirs::exists(localPath.path()))
+	if(!KIO::NetAccess::exists(localPath, true, this))
 	{
 		KIO::CopyJob* job = KIO::copy(image, localPath, KIO::HideProgressInfo);
-		connect(job, SIGNAL( result( KJob * ) ),
+		connect(job, SIGNAL( result (KJob * ) ),
 			this, SLOT( imageDownloaded( KJob * ) ) );
-	}
-	else
-	{
-		mFileList << localPath.path();
 	}
 }
 
