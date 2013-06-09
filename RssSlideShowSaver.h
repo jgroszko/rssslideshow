@@ -6,6 +6,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
+#include <QTimeLine>
 
 #include <kurl.h>
 #include <kscreensaver.h>
@@ -22,6 +23,7 @@ protected slots:
 	void newImage(KUrl url);
 
 	void nextImage();
+	void updateEffect(int frame);
 protected:
 	/* Config Options */
 	QList<QString> m_Feeds;
@@ -31,8 +33,12 @@ protected:
 	QGraphicsView* m_View;
 	QGraphicsScene* m_Scene;
 	QGraphicsPixmapItem* m_PixmapItem;
+	QTimeLine* m_Timeline;
 
 	void readConfig();
+
+	int m_ImageLeft, m_ImageTop;
+	int m_FrameRange;
 
 	QList<QString> m_Images;
         QQueue<QString> m_ImageQueue;

@@ -3,6 +3,7 @@
 #include <QList>
 #include <QTimer>
 #include <QThread>
+
 #include <kglobal.h>
 #include <kconfig.h>
 #include <kconfiggroup.h>
@@ -19,7 +20,8 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 	m_Scene->addItem(m_PixmapItem);
 
 	m_View = new QGraphicsView(m_Scene);
-	m_View->setStyleSheet("QGraphicsView { background: black; border-style: none; }");
+	m_View->setStyleSheet("QGraphicsView { border-style: none; }");
+	m_View->setBackgroundBrush(QBrush(Qt::black, Qt::SolidPattern));
 	m_View->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	m_View->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	m_Scene->setSceneRect(0, 0, width(), height());
@@ -34,9 +36,10 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 
 	updateFeeds();
 
-	QTimer* imageTimer = new QTimer(this);
-	connect(imageTimer, SIGNAL(timeout()), this, SLOT(nextImage()));
-	imageTimer->start(m_Delay);
+	m_Timeline = new QTimeLine(m_Delay, this);
+	m_Timeline->setFrameRange(0, m_Delay);
+	connect(m_Timeline, SIGNAL(frameChanged(int)), this, SLOT(updateEffect(int)));
+	connect(m_Timeline, SIGNAL(finished()), this, SLOT(nextImage()));
 }
 
 void RssSlideShowSaver::readConfig()
@@ -110,8 +113,8 @@ void RssSlideShowSaver::nextImage()
 	int sceneWidth = m_View->width();
 	int sceneHeight = m_View->height();
 
-	int availableTopRange = (sceneWidth - width);
-	int availableLeftRange = (sceneHeight - height);
+	int availableTopRange = (sceneHeight - height);
+	int availableLeftRange = (sceneWidth - width);
 
 	int newTop = 0;
 	int newLeft = 0;
@@ -134,5 +137,42 @@ void RssSlideShowSaver::nextImage()
 		newLeft = (availableLeftRange / 2);
 	}
 	
-	m_PixmapItem->setPos(newTop, newLeft);
+	m_ImageTop = newTop;
+	m_ImageLeft = newLeft;
+
+	m_PixmapItem->setPos(m_ImageLeft, m_ImageTop);
+
+	m_Timeline->start();
+}
+
+void RssSlideShowSaver::updateEffect(int frame)
+{
+	const double fadePeriod = 200;
+	const double frameRange = m_Delay;
+
+	double effectProgress = 0.0;
+	bool ending = false;
+
+	if(frame < fadePeriod)
+		effectProgress = (double)frame / fadePeriod;
+	else if(frame > fadePeriod && (frame < (frameRange - fadePeriod)))
+		effectProgress = 1.0;
+	else if(frame > (frameRange - fadePeriod))
+	{
+		ending = true;
+		effectProgress = 1 - (((double)frame - (frameRange - fadePeriod)) / fadePeriod);
+	}
+
+	m_PixmapItem->setOpacity(effectProgress);
+
+	double motionRange = (double)m_PixmapItem->pixmap().width() * 0.05;
+	double t = 1 - effectProgress;
+	double easedProgress = 1 - t*t*t*t;
+
+	m_PixmapItem->setPos(
+		(ending
+		 ? (m_ImageLeft + ((1.0 - easedProgress))*motionRange)
+		 : (m_ImageLeft-motionRange) + (easedProgress*motionRange)),
+		m_ImageTop
+		);
 }
