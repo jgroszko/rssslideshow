@@ -2,7 +2,6 @@
 
 #include <QEventLoop>
 #include <QStringList>
-#include <QDebug>
 #include <QXmlQuery>
 #include <QThread>
 #include <QRegExp>
@@ -104,8 +103,6 @@ void FeedReadWorker::requestImage(QString feedName, KUrl url)
 	}
 	else
 	{
-		qDebug() << "Already exists: " << localImage.toLocalFile();
-
 		emit newImage(localImage);
 	}
 }

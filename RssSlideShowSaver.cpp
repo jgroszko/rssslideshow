@@ -1,3 +1,4 @@
+#include <QTime>
 #include <QDebug>
 #include <QList>
 #include <QTimer>
@@ -19,6 +20,8 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 
 	m_View = new QGraphicsView(m_Scene);
 	m_View->setStyleSheet("QGraphicsView { background: black; border-style: none; }");
+	m_View->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	m_View->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	embed(m_View);
 
@@ -29,8 +32,6 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 	feedTimer->start(1000 * 60 * 60); // 1 hour
 
 	updateFeeds();
-
-	nextImage();
 
 	QTimer* imageTimer = new QTimer(this);
 	connect(imageTimer, SIGNAL(timeout()), this, SLOT(nextImage()));
@@ -65,8 +66,10 @@ void RssSlideShowSaver::updateFeeds()
 
 void RssSlideShowSaver::newImage(KUrl url)
 {
-	qDebug() << "New image ready: " << url.toLocalFile();
 	m_Images.append(url.toLocalFile());
+
+	if(m_PixmapItem->pixmap().isNull())
+		nextImage();
 }
 
 void RssSlideShowSaver::nextImage()
@@ -83,6 +86,7 @@ void RssSlideShowSaver::nextImage()
 		for(int i = 0; i < m_Images.count(); i++)
 			imagesStaging.append(m_Images.at(i));
 
+		qsrand(QTime::currentTime().msec());
 		while(!imagesStaging.isEmpty())
 		{			
 			m_ImageQueue.enqueue(
