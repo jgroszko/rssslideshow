@@ -16,6 +16,8 @@ set(rssslideshow.kss_SRCS RssSlideShowSaver.cpp
 
 kde4_add_ui_files(rssslideshow.kss_SRCS rssslideshowcfg.ui )
 
+qt4_automoc(rssslideshow.kss_SRCS)
+
 kde4_add_executable(rssslideshow.kss ${rssslideshow.kss_SRCS})
 
 target_link_libraries( rssslideshow.kss ${KDE4_KIO_LIBS} ${KDE4WORKSPACE_KSCREENSAVER_LIBRARY} ${QT_QTXMLPATTERNS_LIBRARY})

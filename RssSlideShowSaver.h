@@ -17,6 +17,9 @@ class RssSlideShowSaver : public KScreenSaver
 public:
 	RssSlideShowSaver(WId wid);
 
+	void readConfig();
+	void update();
+
 protected slots:
 	void updateFeeds();
 
@@ -29,13 +32,13 @@ protected:
 	QList<QString> m_Feeds;
 	int m_Delay;
 	bool m_RandomPosition;
+	bool m_Transition;
+	int m_TransitionDuration;
 
 	QGraphicsView* m_View;
 	QGraphicsScene* m_Scene;
 	QGraphicsPixmapItem* m_PixmapItem;
 	QTimeLine* m_Timeline;
-
-	void readConfig();
 
 	int m_ImageLeft, m_ImageTop;
 	int m_FrameRange;

@@ -9,9 +9,6 @@ class RssSlideShowConfig : public QWidget, public Ui::SlideShowCfg
 public:
   RssSlideShowConfig( QWidget *parent ) : QWidget( parent ) {
     setupUi( parent );
-    cbSpacer1->changeSize(style()->pixelMetric(QStyle::PM_IndicatorWidth) +
-                            style()->pixelMetric(QStyle::PM_CheckBoxLabelSpacing), 1,
-                          QSizePolicy::Fixed, QSizePolicy::Minimum);
   }
 };
 

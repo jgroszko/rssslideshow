@@ -1,5 +1,4 @@
 #include <QTime>
-#include <QDebug>
 #include <QList>
 #include <QTimer>
 #include <QThread>
@@ -17,6 +16,8 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 
 	m_Scene = new QGraphicsScene();
 	m_PixmapItem = new QGraphicsPixmapItem();
+	if(m_Transition)
+		m_PixmapItem->setOpacity(0.0);
 	m_Scene->addItem(m_PixmapItem);
 
 	m_View = new QGraphicsView(m_Scene);
@@ -36,10 +37,7 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 
 	updateFeeds();
 
-	m_Timeline = new QTimeLine(m_Delay, this);
-	m_Timeline->setFrameRange(0, m_Delay);
-	connect(m_Timeline, SIGNAL(frameChanged(int)), this, SLOT(updateEffect(int)));
-	connect(m_Timeline, SIGNAL(finished()), this, SLOT(nextImage()));
+	update();
 }
 
 void RssSlideShowSaver::readConfig()
@@ -48,6 +46,19 @@ void RssSlideShowSaver::readConfig()
 	m_Feeds = config.readEntry("Feeds", "").split("|");
 	m_Delay = config.readEntry("Delay", 10) * 1000;
 	m_RandomPosition = config.readEntry("RandomPosition", true);
+	m_Transition = config.readEntry("Transition", true);
+	m_TransitionDuration = config.readEntry("TransitionDuration", 500);
+}
+
+void RssSlideShowSaver::update()
+{
+	// Apply config settings
+	m_Timeline = new QTimeLine(m_Delay, this);
+	m_Timeline->setFrameRange(0, m_Delay);
+	
+	if(m_Transition)
+		connect(m_Timeline, SIGNAL(frameChanged(int)), this, SLOT(updateEffect(int)));
+	connect(m_Timeline, SIGNAL(finished()), this, SLOT(nextImage()));
 }
 
 void RssSlideShowSaver::updateFeeds()
@@ -66,6 +77,8 @@ void RssSlideShowSaver::updateFeeds()
 	connect(worker, SIGNAL(newImage(KUrl)), this, SLOT(newImage(KUrl)));
 	worker->moveToThread(workerThread);
 
+	m_Images.clear();
+
         workerThread->start();
 }
 
@@ -83,7 +96,6 @@ void RssSlideShowSaver::nextImage()
 	{
 		if(m_Images.isEmpty())
 		{
-			qDebug() << "No images :(";
 			return;
 		}
 
@@ -102,8 +114,6 @@ void RssSlideShowSaver::nextImage()
 	}
 
 	QString currentImage = m_ImageQueue.dequeue();
-	qDebug() << "Current image now: " << currentImage;
-	qDebug() << "Images on queue: " << m_ImageQueue.count();
 
 	m_PixmapItem->setPixmap(QPixmap(currentImage));
 
@@ -147,7 +157,7 @@ void RssSlideShowSaver::nextImage()
 
 void RssSlideShowSaver::updateEffect(int frame)
 {
-	const double fadePeriod = 200;
+	const double fadePeriod = m_TransitionDuration;
 	const double frameRange = m_Delay;
 
 	double effectProgress = 0.0;

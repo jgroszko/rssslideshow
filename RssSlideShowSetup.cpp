@@ -19,6 +19,8 @@ RssSlideShowSetup::RssSlideShowSetup(QWidget *aParent)
 	cfg->mPreview->show();    // otherwise saver does not get correct size
 	mSaver = new RssSlideShowSaver(cfg->mPreview->winId());
 
+	connect(cfg->mCbxTransition, SIGNAL(clicked()), this, SLOT(toggleTransition()));
+
 	connect(cfg->pushButton_AddFeed, SIGNAL(clicked()),this,SLOT(slotAddFeed()));
 	connect(cfg->pushButton_RemoveFeed, SIGNAL(clicked()),this,SLOT(slotRemoveFeed()));
 
@@ -36,14 +38,16 @@ void RssSlideShowSetup::readSettings()
 {
 	KConfigGroup config( KGlobal::config(), "Settings");
 
-	cfg->mCbxRandom->setChecked(config.readEntry("ShowRandom", true));
-	cfg->mCbxZoom->setChecked(config.readEntry("ZoomImages", false));
-	cfg->mCbxShowName->setChecked(config.readEntry("PrintName", true));
-	cfg->mCbxShowPath->setChecked(config.readEntry("PrintPath", false));
 	cfg->mDelay->setValue(config.readEntry("Delay", 20));
 	cfg->mDelay->setSuffix(ki18np(" second", " seconds"));
+
 	cfg->mCbxRandomPosition->setChecked(config.readEntry("RandomPosition", false));
-	//cfg->mCbxEffectsEnabled->setChecked(config.readEntry("EffectsEnabled", true));
+
+	cfg->mCbxTransition->setChecked(config.readEntry("Transition", true));
+	toggleTransition();
+
+	cfg->mTransitionDuration->setValue(config.readEntry("TransitionDuration", 500));
+	cfg->mTransitionDuration->setSuffix(ki18np(" ms", " ms"));
 
 	QStringList feeds = config.readEntry("Feeds").split("|");
 
@@ -51,19 +55,15 @@ void RssSlideShowSetup::readSettings()
 		cfg->listWidget_Feeds->addItem(feeds.at(i));
 }
 
-
 //-----------------------------------------------------------------------------
 void RssSlideShowSetup::writeSettings()
 {
 	KConfigGroup config( KGlobal::config(), "Settings");
 
-	config.writeEntry("ShowRandom", cfg->mCbxRandom->isChecked());
-	config.writeEntry("ZoomImages", cfg->mCbxZoom->isChecked());
-	config.writeEntry("PrintName",  cfg->mCbxShowName->isChecked());
-	config.writeEntry("PrintPath",  cfg->mCbxShowPath->isChecked());
 	config.writeEntry("Delay", cfg->mDelay->value());
 	config.writeEntry("RandomPosition", cfg->mCbxRandomPosition->isChecked());
-	//config.writeEntry("EffectsEnabled", cfg->mCbxEffectsEnabled->isChecked());
+	config.writeEntry("Transition", cfg->mCbxTransition->isChecked());
+	config.writeEntry("TransitionDuration", cfg->mTransitionDuration->value());
 
 	QStringList feeds;
 
@@ -80,13 +80,18 @@ void RssSlideShowSetup::writeSettings()
 
 	if (mSaver)
 	{
-		//mSaver->readConfig();
+		mSaver->readConfig();
 		mSaver->update();
 	}
 }
 
 
 //-----------------------------------------------------------------------------
+
+void RssSlideShowSetup::toggleTransition()
+{
+	cfg->mTransitionDuration->setEnabled(cfg->mCbxTransition->isChecked());
+}
 
 void RssSlideShowSetup::slotAddFeed()
 {

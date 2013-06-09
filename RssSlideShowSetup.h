@@ -19,6 +19,7 @@ protected:
 protected slots:
   void slotOk();
   void writeSettings();
+  void toggleTransition();
   void slotAddFeed();
   void slotRemoveFeed();
 
