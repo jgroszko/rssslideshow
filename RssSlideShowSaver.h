@@ -26,6 +26,7 @@ protected:
 	/* Config Options */
 	QList<QString> m_Feeds;
 	int m_Delay;
+	bool m_RandomPosition;
 
 	QGraphicsView* m_View;
 	QGraphicsScene* m_Scene;

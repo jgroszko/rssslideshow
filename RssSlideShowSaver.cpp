@@ -22,6 +22,7 @@ RssSlideShowSaver::RssSlideShowSaver(WId wid) : KScreenSaver(wid)
 	m_View->setStyleSheet("QGraphicsView { background: black; border-style: none; }");
 	m_View->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	m_View->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	m_Scene->setSceneRect(0, 0, width(), height());
 
 	embed(m_View);
 
@@ -43,6 +44,7 @@ void RssSlideShowSaver::readConfig()
 	KConfigGroup config(KGlobal::config(), "Settings");
 	m_Feeds = config.readEntry("Feeds", "").split("|");
 	m_Delay = config.readEntry("Delay", 10) * 1000;
+	m_RandomPosition = config.readEntry("RandomPosition", true);
 }
 
 void RssSlideShowSaver::updateFeeds()
@@ -101,4 +103,36 @@ void RssSlideShowSaver::nextImage()
 	qDebug() << "Images on queue: " << m_ImageQueue.count();
 
 	m_PixmapItem->setPixmap(QPixmap(currentImage));
+
+	int width = m_PixmapItem->pixmap().width();
+	int height = m_PixmapItem->pixmap().height();
+
+	int sceneWidth = m_View->width();
+	int sceneHeight = m_View->height();
+
+	int availableTopRange = (sceneWidth - width);
+	int availableLeftRange = (sceneHeight - height);
+
+	int newTop = 0;
+	int newLeft = 0;
+
+	if(m_RandomPosition && availableTopRange > 0)
+	{
+		newTop = qrand() % availableTopRange;
+	}
+	else
+	{
+		newTop = (availableTopRange / 2);
+	}
+	
+	if(m_RandomPosition && availableLeftRange > 0)
+	{
+		newLeft = qrand() % availableLeftRange;
+	}
+	else
+	{
+		newLeft = (availableLeftRange / 2);
+	}
+	
+	m_PixmapItem->setPos(newTop, newLeft);
 }
