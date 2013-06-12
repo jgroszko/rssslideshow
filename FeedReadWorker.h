@@ -18,7 +18,6 @@ public slots:
 
 signals:
 	void newImage(KUrl url);
-	void finished();
 
 protected:
 	void requestImage(QString feedName, KUrl url);

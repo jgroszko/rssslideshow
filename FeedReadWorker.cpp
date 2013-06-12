@@ -66,7 +66,7 @@ void FeedReadWorker::doWork()
 		}
 	}
 
-	emit finished();
+	QThread::currentThread()->quit();
 }
 
 void FeedReadWorker::requestImage(QString feedName, KUrl url)
