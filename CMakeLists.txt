@@ -8,13 +8,13 @@ include (KDE4Defaults)
 
 include_directories ( ${KDE4WORKSPACE_INCLUDE_DIR} ${KDE4_INCLUDES} )
 
-set(rssslideshow.kss_SRCS RssSlideShowSaver.cpp
-			  RssSlideShowSetup.cpp
-			  RssSlideShowInterface.cpp
-			  FeedReadWorker.cpp
-			  main.cpp )
+set(rssslideshow.kss_SRCS src/RssSlideShowSaver.cpp
+			  src/RssSlideShowSetup.cpp
+			  src/RssSlideShowInterface.cpp
+			  src/FeedReadWorker.cpp
+			  src/main.cpp )
 
-kde4_add_ui_files(rssslideshow.kss_SRCS rssslideshowcfg.ui )
+kde4_add_ui_files(rssslideshow.kss_SRCS src/rssslideshowcfg.ui )
 
 qt4_automoc(rssslideshow.kss_SRCS)
 

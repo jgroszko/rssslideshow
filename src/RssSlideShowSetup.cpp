@@ -6,10 +6,9 @@ RssSlideShowSetup::RssSlideShowSetup(QWidget *aParent)
 	: KDialog(aParent)
 {
 	setCaption(i18n( "Setup RSS Slide Show Screen Saver" ));
-	setButtons(Ok|Cancel|Help);
+	setButtons(Ok|Cancel);
 	setDefaultButton(Ok);
 	setModal(true);
-	setButtonText( Help, i18n( "A&bout" ) );
 
 	QWidget *main = new QWidget(this);
 	setMainWidget(main);
