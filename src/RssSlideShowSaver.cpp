@@ -84,7 +84,7 @@ void RssSlideShowSaver::updateFeeds()
 
 void RssSlideShowSaver::newImage(KUrl url)
 {
-	m_ImagesDb.addImage(url.toLocalFile());
+	m_ImagesDb.add(url.toLocalFile());
 
 	if(m_PixmapItem->pixmap().isNull())
 		nextImage();
@@ -94,7 +94,7 @@ void RssSlideShowSaver::nextImage()
 {
 	if(m_ImageQueue.isEmpty())
 	{
-		QStringList imagesStaging = m_ImagesDb.getImages();
+		QStringList imagesStaging = m_ImagesDb.get();
 		for(int i = 0; i < imagesStaging.size(); i++)
 			m_ImageQueue.enqueue(imagesStaging.at(i));
 	}

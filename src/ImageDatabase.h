@@ -13,9 +13,10 @@ public:
 	void open();
 	void close();
 
-	void addImage(QString url);
+	bool exists(QString url);
+	void add(QString url);
 	
-	QStringList getImages(int limit = 50);
+	QStringList get(int limit = 50);
 
 protected:
 	QSqlDatabase m_db;
