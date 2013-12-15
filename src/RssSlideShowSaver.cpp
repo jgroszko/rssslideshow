@@ -77,14 +77,14 @@ void RssSlideShowSaver::updateFeeds()
 	connect(worker, SIGNAL(newImage(KUrl)), this, SLOT(newImage(KUrl)));
 	worker->moveToThread(workerThread);
 
-	m_Images.clear();
+	m_ImagesDb.open();
 
         workerThread->start();
 }
 
 void RssSlideShowSaver::newImage(KUrl url)
 {
-	m_Images.append(url.toLocalFile());
+	m_ImagesDb.addImage(url.toLocalFile());
 
 	if(m_PixmapItem->pixmap().isNull())
 		nextImage();
@@ -94,23 +94,9 @@ void RssSlideShowSaver::nextImage()
 {
 	if(m_ImageQueue.isEmpty())
 	{
-		if(m_Images.isEmpty())
-		{
-			return;
-		}
-
-		QList<QString> imagesStaging;
-		for(int i = 0; i < m_Images.count(); i++)
-			imagesStaging.append(m_Images.at(i));
-
-		qsrand(QTime::currentTime().msec());
-		while(!imagesStaging.isEmpty())
-		{			
-			m_ImageQueue.enqueue(
-				imagesStaging.takeAt(
-					qrand() % imagesStaging.count()
-					));
-		}
+		QStringList imagesStaging = m_ImagesDb.getImages();
+		for(int i = 0; i < imagesStaging.size(); i++)
+			m_ImageQueue.enqueue(imagesStaging.at(i));
 	}
 
 	QString currentImage = m_ImageQueue.dequeue();

@@ -11,6 +11,8 @@
 #include <kurl.h>
 #include <kscreensaver.h>
 
+#include "ImageDatabase.h"
+
 class RssSlideShowSaver : public KScreenSaver
 {
 	Q_OBJECT
@@ -44,6 +46,7 @@ protected:
 	int m_FrameRange;
 
 	QList<QString> m_Images;
+	ImageDatabase m_ImagesDb;
         QQueue<QString> m_ImageQueue;
 };
 
