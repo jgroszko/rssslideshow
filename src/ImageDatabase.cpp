@@ -1,17 +1,32 @@
 #include <QDebug>
 
+#include <kglobal.h>
+#include <kstandarddirs.h>
+#include <kcomponentdata.h>
+
 #include "ImageDatabase.h"
 
 ImageDatabase::ImageDatabase()
 {
 	m_db = QSqlDatabase::addDatabase("QSQLITE");
 
-	m_db.setDatabaseName("rssslideshow.db");
+	QString fullDirectory =
+	  KStandardDirs::locateLocal("cache",
+				     "rssslideshow",
+				     KGlobal::activeComponent());
+		
+	if(!QDir(fullDirectory).exists())
+	  QDir(fullDirectory).mkpath(fullDirectory);		     
+
+	m_db.setDatabaseName(fullDirectory + QDir::separator() + "rssslideshow.db");
 }
 
 void ImageDatabase::open()
 {
-	m_db.open();
+	if(!m_db.open())
+	{
+		qDebug() << "Unable to open database " << m_db.lastError();
+	}
 
 	if(!m_db.tables().contains("images"))
 	{
@@ -19,7 +34,7 @@ void ImageDatabase::open()
 		query.prepare("CREATE TABLE images "
 			      "(id INTEGER PRIMARY KEY AUTOINCREMENT, "
 			      " timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-			      " url CHAR(255) UNIQUE);");
+			      " url CHAR(255) UNIQUE)");
 		if(!query.exec())
 		{
 			qDebug() << "Unable to create table images " << query.lastError();
@@ -36,10 +51,12 @@ bool ImageDatabase::exists(QString url)
 {
 	QSqlQuery query;
 	query.prepare("SELECT COUNT() FROM images "
-		      "WHERE url=:url;");
+		      "WHERE url=:url");
 	query.bindValue("url", url);
 	if(!query.exec())
 		qDebug() << "Failed to query for image " << url << " " << query.lastError();
+
+	query.first();
 
 	return query.value(0).toInt() > 0;
 }
@@ -50,7 +67,7 @@ void ImageDatabase::add(QString url)
 	{
 		QSqlQuery query;
 		query.prepare("INSERT INTO images (URL)"
-			      "VALUES (:url);");
+			      "VALUES (:url)");
 		query.bindValue("url", url);
 		if(!query.exec())
 		{

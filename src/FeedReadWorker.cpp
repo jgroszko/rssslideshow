@@ -27,13 +27,15 @@ KUrl FeedReadWorker::localPath(QString feedName, KUrl imageUrl)
 	QString fullDirectory =
 		KStandardDirs::locateLocal(
 			"cache",
-			"rssslideshow/" + feedName,
+			QString("rssslideshow") + QDir::separator() + feedName,
 			KGlobal::activeComponent());
 
 	if(!QDir(fullDirectory).exists())
 		QDir(fullDirectory).mkpath(fullDirectory);	
 
-	return fullDirectory + "/" + fileName;
+	return fullDirectory +
+	  QDir::separator() +
+	  fileName;
 }
 
 void FeedReadWorker::doWork()
